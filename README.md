@@ -72,7 +72,6 @@ We are actively working on the following features:
 - [ ] **Browser Extensions:** Auto-fill for Chrome & Firefox.
 - [ ] **Breach Monitoring:** k-anonymity check against HavelBeenPwned.
 - [ ] **TOTP Authenticator:** Built-in 2FA code generator.
-- 
 ---
 
 ## 📋 Prerequisites
@@ -148,7 +147,7 @@ zerok-vault/
 
 ## 📄 License
 
-Distributed under the **MIT License**. See `LICENSE` for more information.
+Distributed under the **GPL-3.0 license**. See `LICENSE` for more information.
 
 ---
 
