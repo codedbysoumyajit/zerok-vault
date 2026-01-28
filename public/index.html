@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZeroK Vault</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div id="auth-view" class="auth-container">
+        <div class="glass-card auth-card">
+            <div class="brand-large">
+                <div class="icon-box"><i class="ph-fill ph-shield-check"></i></div>
+                <h1>ZeroK Vault</h1>
+            </div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="input-wrap">
+                    <i class="ph ph-envelope-simple input-icon"></i>
+                    <input type="email" id="l-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-wrap">
+                    <i class="ph ph-lock-key input-icon"></i>
+                    <input type="password" id="l-pass" placeholder="Master Password" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Unlock Vault</button>
+                <p class="switch-link">New? <a onclick="toggleAuth('register')">Create Account</a></p>
+            </form>
+
+            <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+                <div class="input-wrap">
+                    <i class="ph ph-envelope-simple input-icon"></i>
+                    <input type="email" id="r-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-wrap">
+                    <i class="ph ph-lock-key input-icon"></i>
+                    <input type="password" id="r-pass" placeholder="Create Master Key" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Create Vault</button>
+                <p class="switch-link">Have an account? <a onclick="toggleAuth('login')">Log In</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-view" class="app-layout hidden">
+        
+        <nav class="sidebar">
+            <div class="logo-area">
+                <i class="ph-fill ph-shield-check"></i> <span>ZeroK</span>
+            </div>
+            
+            <div class="nav-links">
+                <button onclick="setView('all')" class="nav-btn active" id="nav-all">
+                    <i class="ph ph-squares-four"></i> <span>Home</span>
+                </button>
+                <button onclick="setView('favorites')" class="nav-btn" id="nav-favorites">
+                    <i class="ph ph-heart"></i> <span>Favorites</span>
+                </button>
+                <button onclick="setView('trash')" class="nav-btn" id="nav-trash">
+                    <i class="ph ph-trash"></i> <span>Trash</span>
+                </button>
+                <button onclick="logout()" class="nav-btn mobile-only logout">
+                    <i class="ph ph-sign-out"></i> <span>Lock</span>
+                </button>
+            </div>
+
+            <div class="sidebar-footer desktop-only">
+                <button onclick="logout()" class="nav-btn logout">
+                    <i class="ph ph-sign-out"></i> <span>Lock Vault</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="header">
+                <div>
+                    <h2 id="page-title">My Vault</h2>
+                </div>
+                <div class="header-actions">
+                    <button onclick="toggleTheme()" class="icon-btn" title="Toggle Theme">
+                        <i class="ph-fill ph-moon"></i>
+                    </button>
+                    <button onclick="openModal()" class="btn-primary desktop-only">
+                        <i class="ph ph-plus"></i> New Item
+                    </button>
+                </div>
+            </header>
+
+            <div class="search-bar">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" placeholder="Search items..." onkeyup="filterVault(this.value)">
+            </div>
+
+            <div id="vault-grid" class="grid-area"></div>
+            
+            <div id="empty-state" class="empty-state hidden">
+                <i class="ph ph-safe"></i>
+                <p>Vault is empty</p>
+            </div>
+
+            <button onclick="openModal()" class="fab mobile-only">
+                <i class="ph ph-plus"></i>
+            </button>
+        </main>
+    </div>
+
+    <div id="modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card">
+            <div class="modal-header">
+                <h3>New Item</h3>
+                <button onclick="closeModal()" class="icon-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <form onsubmit="handleSaveItem(event)">
+                <div class="input-wrap">
+                    <label>Title</label>
+                    <input type="text" id="i-title" placeholder="e.g. Google" required>
+                </div>
+                <div class="input-wrap">
+                    <label>Username</label>
+                    <input type="text" id="i-user" placeholder="email@example.com">
+                </div>
+                <div class="input-wrap">
+                    <label>Password</label>
+                    <div class="row">
+                        <input type="text" id="i-pass" required placeholder="••••••••">
+                        <button type="button" onclick="genPass()" class="gen-btn" title="Generate">
+                            <i class="ph ph-magic-wand"></i>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary full">Encrypt & Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

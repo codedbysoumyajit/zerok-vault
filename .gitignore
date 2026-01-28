@@ -1,0 +1,34 @@
+# --- Build Artifacts & Binaries ---
+/bin/
+/dist/
+main
+main.exe
+zerok-vault
+zerok-vault.exe
+*.test
+*.out
+
+# --- Environment Variables (CRITICAL) ---
+.env
+
+# --- Dependency Directories ---
+# If you decide to vendor your dependencies later
+vendor/
+
+# --- IDE & Editor Settings ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS Specific Files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Logs ---
+*.log
