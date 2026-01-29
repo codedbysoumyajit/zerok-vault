@@ -3,7 +3,7 @@
 ![Go](https://img.shields.io/badge/Backend-Go%20%2F%20Fiber-00ADD8?style=for-the-badge&logo=go)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?style=for-the-badge&logo=mongodb)
 ![JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?style=for-the-badge&logo=javascript)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge)
 
 **ZeroK Vault** is a self-hostable, zero-knowledge password manager built for privacy enthusiasts. It ensures that **only you** hold the keys to your data. The server acts as a blind storage container and never sees your master password or your unencrypted secrets.
 
