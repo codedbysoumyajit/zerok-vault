@@ -16,6 +16,9 @@
     <div id="toast-container"></div>
 
     <div id="auth-view" class="auth-container">
+        <button onclick="toggleTheme()" class="theme-toggle-auth" title="Toggle Theme">
+            <i class="ph-fill ph-moon"></i>
+        </button>
         <div class="glass-card auth-card">
             <div class="brand-large">
                 <div class="icon-box"><i class="ph-fill ph-shield-check"></i></div>
@@ -124,6 +127,10 @@
                     <input type="text" id="i-title" placeholder="e.g. Google" required>
                 </div>
                 <div class="input-wrap">
+                    <label>Website (optional)</label>
+                    <input type="url" id="i-website" placeholder="https://example.com">
+                </div>
+                <div class="input-wrap">
                     <label>Username</label>
                     <input type="text" id="i-user" placeholder="email@example.com">
                 </div>
@@ -138,6 +145,44 @@
                 </div>
                 <button type="submit" class="btn-primary full">Encrypt & Save</button>
             </form>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="modal-overlay hidden">
+        <div class="glass-card modal-card">
+            <div class="modal-header">
+                <h3 id="detail-title">Item Details</h3>
+                <button onclick="closeDetailModal()" class="icon-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <div>
+                <div class="input-wrap" id="detail-website-wrap" style="display: none;">
+                    <div class="detail-label">Website</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-website"></div>
+                        <button type="button" class="copy-icon-btn" onclick="openDetailWebsite()" title="Open Website">
+                            <i class="ph ph-arrow-square-out"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">Username / Email</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-username"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetailUsername()" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">Password</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-password"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetailPassword()" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

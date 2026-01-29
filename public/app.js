@@ -97,26 +97,28 @@ function renderVault(filterText = '') {
         let btns = '';
         if (currentView === 'trash') {
             btns = `
-                <button onclick="restoreItem('${item.id}')" class="action-btn" title="Restore"><i class="ph ph-arrow-counter-clockwise"></i></button>
-                <button onclick="permDelete('${item.id}')" class="action-btn delete" style="color:var(--danger)" title="Delete"><i class="ph ph-trash"></i></button>
+                <button onclick="event.stopPropagation(); restoreItem('${item.id}')" class="action-btn" title="Restore"><i class="ph ph-arrow-counter-clockwise"></i></button>
+                <button onclick="event.stopPropagation(); permDelete('${item.id}')" class="action-btn delete" style="color:var(--danger)" title="Delete"><i class="ph ph-trash"></i></button>
             `;
         } else {
-            // FIX: Using 'ph' (Outline) vs 'ph-fill' (Solid) classes on the same 'heart' icon
             const heartClass = item.isFavorite ? 'ph-fill ph-heart' : 'ph ph-heart';
             const activeClass = item.isFavorite ? 'fav-active' : '';
             
             btns = `
-                <button onclick="copyPass('${item.password}')" class="action-btn" title="Copy"><i class="ph ph-copy"></i></button>
-                <button onclick="toggleFav('${item.id}')" class="action-btn ${activeClass}" title="Favorite">
+                <button onclick="event.stopPropagation(); toggleFav('${item.id}')" class="action-btn ${activeClass}" title="Favorite">
                     <i class="${heartClass}"></i>
                 </button>
-                <button onclick="softDelete('${item.id}')" class="action-btn" title="Archive"><i class="ph ph-trash"></i></button>
+                <button onclick="event.stopPropagation(); softDelete('${item.id}')" class="action-btn" title="Archive"><i class="ph ph-trash"></i></button>
             `;
         }
 
+        const iconHTML = item.website 
+            ? `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="this.parentElement.innerHTML='<i class=\'ph ph-key\'></i>'" style="width: 24px; height: 24px; border-radius: 4px;">` 
+            : `<i class="ph ph-key"></i>`;
+        
         card.innerHTML = `
             <div class="card-top">
-                <div class="card-icon"><i class="ph ph-key"></i></div>
+                <div class="card-icon">${iconHTML}</div>
                 <div class="card-info">
                     <h3>${item.title}</h3>
                     <p>${item.username || 'No username'}</p>
@@ -124,6 +126,11 @@ function renderVault(filterText = '') {
             </div>
             <div class="card-actions">${btns}</div>
         `;
+        
+        if (currentView !== 'trash') {
+            card.addEventListener('click', () => openDetailModal(item));
+        }
+        
         grid.appendChild(card);
     });
 }
@@ -141,6 +148,7 @@ async function handleSaveItem(e) {
     try {
         const payload = {
             title: document.getElementById('i-title').value,
+            website: document.getElementById('i-website').value,
             username: document.getElementById('i-user').value,
             password: document.getElementById('i-pass').value,
             isFavorite: false, isDeleted: false, createdAt: Date.now()
@@ -258,5 +266,53 @@ function genPass() {
 function copyPass(t) { navigator.clipboard.writeText(t); }
 function logout() { localStorage.removeItem('token'); location.reload(); }
 function filterVault(v) { renderVault(v); }
+
+let currentDetailItem = null;
+
+function openDetailModal(item) {
+    currentDetailItem = item;
+    document.getElementById('detail-title').innerText = item.title;
+    document.getElementById('detail-username').innerText = item.username || 'No username';
+    document.getElementById('detail-password').innerText = item.password;
+    
+    const websiteWrap = document.getElementById('detail-website-wrap');
+    if (item.website) {
+        document.getElementById('detail-website').innerText = item.website;
+        websiteWrap.style.display = 'block';
+    } else {
+        websiteWrap.style.display = 'none';
+    }
+    
+    const modal = document.getElementById('detail-modal');
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function closeDetailModal() {
+    const modal = document.getElementById('detail-modal');
+    modal.classList.remove('open');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        currentDetailItem = null;
+    }, 250);
+}
+
+function copyDetailUsername() {
+    if (currentDetailItem && currentDetailItem.username) {
+        navigator.clipboard.writeText(currentDetailItem.username);
+    }
+}
+
+function copyDetailPassword() {
+    if (currentDetailItem && currentDetailItem.password) {
+        navigator.clipboard.writeText(currentDetailItem.password);
+    }
+}
+
+function openDetailWebsite() {
+    if (currentDetailItem && currentDetailItem.website) {
+        window.open(currentDetailItem.website, '_blank', 'noopener,noreferrer');
+    }
+}
 
 initTheme();
