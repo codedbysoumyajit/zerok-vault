@@ -88,7 +88,7 @@ We are actively working on the following features:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/yourusername/zerok-vault.git](https://github.com/yourusername/zerok-vault.git)
+    git clone https://github.com/codedbysoumyajit/zerok-vault.git
     cd zerok-vault
     ```
 
