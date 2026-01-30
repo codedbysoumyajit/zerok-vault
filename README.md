@@ -61,13 +61,12 @@ ZeroK Vault uses a **Two-Key Architecture** to ensure security:
 We are actively working on the following features:
 
 - [ ] **PWA Support:** Install as a native app on iOS/Android.
-- [ ] **Identity Storage:** Form filling profiles (Name, Address, Phone).
-- [ ] **Credit Cards:** Secure storage for payment methods.
-- [ ] **Secure Notes:** Encrypted text blobs for non-password data.
+- [x] **Identity Storage:** Form filling profiles (Name, Address, Phone).
+- [x] **Credit Cards:** Secure storage for payment methods.
+- [x] **Secure Notes:** Encrypted text blobs for non-password data.
 - [ ] **SSH Keys:** Storage for developer keys.
-- [ ] **Website Launching:** Click-to-open URLs from vault items.
-- [ ] **Category Management:** Folders and tagging system.
-- [ ] **WASM Optimization:** Porting Argon2 to WebAssembly for faster client-side hashing.
+- [x] **Website Launching:** Click-to-open URLs from vault items.
+- [x] **Category Management:** Folders and tagging system.
 - [ ] **Duress Mode:** "Panic" password that wipes data or opens a fake vault.
 - [ ] **Browser Extensions:** Auto-fill for Chrome & Firefox.
 - [ ] **Breach Monitoring:** k-anonymity check against HavelBeenPwned.

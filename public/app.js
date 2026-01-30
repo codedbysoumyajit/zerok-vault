@@ -54,7 +54,12 @@ function openModal() {
     modal.classList.remove('hidden');
     requestAnimationFrame(() => {
         modal.classList.add('open');
-        setTimeout(() => document.getElementById('i-title').focus(), 50);
+        setTimeout(() => {
+            const loginForm = document.getElementById('form-login');
+            if (!loginForm.classList.contains('hidden')) {
+                document.getElementById('i-title')?.focus();
+            }
+        }, 50);
     });
 }
 
@@ -92,6 +97,10 @@ function renderVault(filterText = '') {
     const filtered = allItems.filter(item => {
         const searchText = item.type === 'card' 
             ? (item.title + item.cardHolder + item.cardNumber)
+            : item.type === 'identity'
+            ? (item.title + item.firstName + item.lastName + item.email)
+            : item.type === 'note'
+            ? (item.title + item.notes)
             : (item.title + item.username);
         const matches = searchText.toLowerCase().includes(filterText.toLowerCase());
         
@@ -106,6 +115,8 @@ function renderVault(filterText = '') {
         if (currentCategory === 'all') categoryMatch = true;
         else if (currentCategory === 'login') categoryMatch = item.type === 'login' || !item.type;
         else if (currentCategory === 'card') categoryMatch = item.type === 'card';
+        else if (currentCategory === 'identity') categoryMatch = item.type === 'identity';
+        else if (currentCategory === 'note') categoryMatch = item.type === 'note';
         
         return matches && viewMatch && categoryMatch;
     });
@@ -136,19 +147,27 @@ function renderVault(filterText = '') {
 
         let iconHTML;
         if (item.type === 'card') {
-            const brandStyles = {
-                'Visa': { color: '#1A1F71', text: 'VISA', bg: '#f7f7f7' },
-                'Mastercard': { color: '#EB001B', text: 'Mastercard', bg: '#f7f7f7' },
-                'RuPay': { color: '#097939', text: 'RuPay', bg: '#f7f7f7' },
-                'American Express': { color: '#006FCF', text: 'AMEX', bg: '#f7f7f7' },
-                'Discover': { color: '#FF6000', text: 'Discover', bg: '#f7f7f7' }
+            const brandLogos = {
+                'Visa': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769781204/visa_qle54k.webp',
+                'Mastercard': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769781205/mastercard_liqtxf.webp',
+                'RuPay': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769781205/rupay_xrjzsv.webp',
+                'American Express': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769781204/amex_rk4nfo.webp',
+                'Discover': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769781204/discover_gz9fgc.webp',
+                'UnionPay': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769782009/unionpay_ffojci.png',
+                'Maestro': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769782009/payment_w0q6gw.png',
+                'Diners Club': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769782009/diners-club_fxgduf.png',
+                'JCB': 'https://res.cloudinary.com/dirynxdpt/image/upload/v1769782009/jcb_ptp6fm.png'
             };
-            const brandStyle = brandStyles[item.cardBrand];
-            if (brandStyle) {
-                iconHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: ${brandStyle.bg}; color: ${brandStyle.color}; font-weight: 800; font-size: 8px; border-radius: 6px; letter-spacing: -0.3px;">${brandStyle.text}</div>`;
+            const brandLogo = brandLogos[item.cardBrand];
+            if (brandLogo) {
+                iconHTML = `<img src="${brandLogo}" alt="${item.cardBrand}" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-credit-card\\'></i>'" style="width: 32px; height: 32px; object-fit: contain;">`;
             } else {
                 iconHTML = `<i class="ph ph-credit-card"></i>`;
             }
+        } else if (item.type === 'identity') {
+            iconHTML = `<i class="ph ph-identification-card"></i>`;
+        } else if (item.type === 'note') {
+            iconHTML = `<i class="ph ph-note-pencil"></i>`;
         } else if (item.website) {
             iconHTML = `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="this.parentElement.innerHTML='<i class=\'ph ph-key\'></i>'" style="width: 24px; height: 24px; border-radius: 4px;">`;
         } else {
@@ -157,6 +176,10 @@ function renderVault(filterText = '') {
         
         const subtitle = item.type === 'card' 
             ? (item.cardNumber ? '•••• ' + item.cardNumber.slice(-4) : 'No card number')
+            : item.type === 'identity'
+            ? (item.email || item.firstName || 'No info')
+            : item.type === 'note'
+            ? (item.notes ? (item.notes.length > 50 ? item.notes.substring(0, 50) + '...' : item.notes) : 'No content')
             : (item.username || 'No username');
         
         card.innerHTML = `
@@ -189,7 +212,15 @@ async function handleSaveItem(e) {
     btn.innerText = "Encrypting...";
 
     try {
-        const itemType = document.getElementById('form-login').classList.contains('hidden') ? 'card' : 'login';
+        const loginForm = document.getElementById('form-login');
+        const cardForm = document.getElementById('form-card');
+        const identityForm = document.getElementById('form-identity');
+        const noteForm = document.getElementById('form-note');
+        
+        let itemType = 'login';
+        if (!cardForm.classList.contains('hidden')) itemType = 'card';
+        else if (!identityForm.classList.contains('hidden')) itemType = 'identity';
+        else if (!noteForm.classList.contains('hidden')) itemType = 'note';
         
         let payload;
         if (itemType === 'card') {
@@ -202,6 +233,35 @@ async function handleSaveItem(e) {
                 expiryMonth: document.getElementById('i-card-month').value,
                 expiryYear: document.getElementById('i-card-year').value,
                 cvv: document.getElementById('i-card-cvv').value,
+                isFavorite: false, isDeleted: false, createdAt: Date.now()
+            };
+        } else if (itemType === 'identity') {
+            payload = {
+                type: 'identity',
+                title: document.getElementById('i-identity-title').value,
+                firstName: document.getElementById('i-identity-firstname').value,
+                middleName: document.getElementById('i-identity-middlename').value,
+                lastName: document.getElementById('i-identity-lastname').value,
+                username: document.getElementById('i-identity-username').value,
+                company: document.getElementById('i-identity-company').value,
+                email: document.getElementById('i-identity-email').value,
+                phone: document.getElementById('i-identity-phone').value,
+                ssn: document.getElementById('i-identity-ssn').value,
+                passport: document.getElementById('i-identity-passport').value,
+                license: document.getElementById('i-identity-license').value,
+                address1: document.getElementById('i-identity-address1').value,
+                address2: document.getElementById('i-identity-address2').value,
+                city: document.getElementById('i-identity-city').value,
+                state: document.getElementById('i-identity-state').value,
+                postal: document.getElementById('i-identity-postal').value,
+                country: document.getElementById('i-identity-country').value,
+                isFavorite: false, isDeleted: false, createdAt: Date.now()
+            };
+        } else if (itemType === 'note') {
+            payload = {
+                type: 'note',
+                title: document.getElementById('i-note-name').value,
+                notes: document.getElementById('i-note-content').value,
                 isFavorite: false, isDeleted: false, createdAt: Date.now()
             };
         } else {
@@ -336,9 +396,13 @@ function openDetailModal(item) {
     
     const loginSection = document.getElementById('detail-login');
     const cardSection = document.getElementById('detail-card');
+    const identitySection = document.getElementById('detail-identity');
+    const noteSection = document.getElementById('detail-note');
     
     if (item.type === 'card') {
         loginSection.classList.add('hidden');
+        identitySection.classList.add('hidden');
+        noteSection.classList.add('hidden');
         cardSection.classList.remove('hidden');
         
         document.getElementById('detail-card-holder').innerText = item.cardHolder || 'N/A';
@@ -346,8 +410,47 @@ function openDetailModal(item) {
         document.getElementById('detail-card-brand').innerText = item.cardBrand || 'N/A';
         document.getElementById('detail-card-expiry').innerText = `${item.expiryMonth}/${item.expiryYear}`;
         document.getElementById('detail-card-cvv').innerText = item.cvv || 'N/A';
+    } else if (item.type === 'identity') {
+        loginSection.classList.add('hidden');
+        cardSection.classList.add('hidden');
+        noteSection.classList.add('hidden');
+        identitySection.classList.remove('hidden');
+        
+        const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(' ') || 'N/A';
+        document.getElementById('detail-identity-fullname').innerText = fullName;
+        
+        const showField = (wrapId, valueId, value) => {
+            const wrap = document.getElementById(wrapId);
+            if (value) {
+                document.getElementById(valueId).innerText = value;
+                wrap.style.display = 'block';
+            } else {
+                wrap.style.display = 'none';
+            }
+        };
+        
+        showField('detail-identity-username-wrap', 'detail-identity-username', item.username);
+        showField('detail-identity-company-wrap', 'detail-identity-company', item.company);
+        showField('detail-identity-email-wrap', 'detail-identity-email', item.email);
+        showField('detail-identity-phone-wrap', 'detail-identity-phone', item.phone);
+        showField('detail-identity-ssn-wrap', 'detail-identity-ssn', item.ssn);
+        showField('detail-identity-passport-wrap', 'detail-identity-passport', item.passport);
+        showField('detail-identity-license-wrap', 'detail-identity-license', item.license);
+        
+        const address = [item.address1, item.address2, item.city, item.state, item.postal, item.country].filter(Boolean).join(', ');
+        showField('detail-identity-address-wrap', 'detail-identity-address', address);
+    } else if (item.type === 'note') {
+        loginSection.classList.add('hidden');
+        cardSection.classList.add('hidden');
+        identitySection.classList.add('hidden');
+        noteSection.classList.remove('hidden');
+        
+        document.getElementById('detail-note-name').innerText = item.title || 'N/A';
+        document.getElementById('detail-note-content').innerText = item.notes || 'No content';
     } else {
         cardSection.classList.add('hidden');
+        identitySection.classList.add('hidden');
+        noteSection.classList.add('hidden');
         loginSection.classList.remove('hidden');
         
         document.getElementById('detail-username').innerText = item.username || 'No username';
@@ -397,31 +500,47 @@ function openDetailWebsite() {
 function switchItemType(type) {
     const loginForm = document.getElementById('form-login');
     const cardForm = document.getElementById('form-card');
+    const identityForm = document.getElementById('form-identity');
+    const noteForm = document.getElementById('form-note');
     const loginTab = document.getElementById('tab-login');
     const cardTab = document.getElementById('tab-card');
+    const identityTab = document.getElementById('tab-identity');
+    const noteTab = document.getElementById('tab-note');
+    
+    // Hide all forms and deactivate all tabs
+    loginForm.classList.add('hidden');
+    cardForm.classList.add('hidden');
+    identityForm.classList.add('hidden');
+    noteForm.classList.add('hidden');
+    loginTab.classList.remove('active');
+    cardTab.classList.remove('active');
+    identityTab.classList.remove('active');
+    noteTab.classList.remove('active');
+    
+    // Clear all required attributes
+    document.getElementById('i-title').removeAttribute('required');
+    document.getElementById('i-pass').removeAttribute('required');
+    document.getElementById('i-card-name').removeAttribute('required');
+    document.getElementById('i-card-number').removeAttribute('required');
+    document.getElementById('i-identity-title').removeAttribute('required');
+    document.getElementById('i-note-name').removeAttribute('required');
     
     if (type === 'card') {
-        loginForm.classList.add('hidden');
         cardForm.classList.remove('hidden');
-        loginTab.classList.remove('active');
         cardTab.classList.add('active');
-        
-        // Clear login required attributes
-        document.getElementById('i-title').removeAttribute('required');
-        document.getElementById('i-pass').removeAttribute('required');
-        // Add card required attributes
         document.getElementById('i-card-name').setAttribute('required', 'required');
         document.getElementById('i-card-number').setAttribute('required', 'required');
+    } else if (type === 'identity') {
+        identityForm.classList.remove('hidden');
+        identityTab.classList.add('active');
+        document.getElementById('i-identity-title').setAttribute('required', 'required');
+    } else if (type === 'note') {
+        noteForm.classList.remove('hidden');
+        noteTab.classList.add('active');
+        document.getElementById('i-note-name').setAttribute('required', 'required');
     } else {
-        cardForm.classList.add('hidden');
         loginForm.classList.remove('hidden');
-        cardTab.classList.remove('active');
         loginTab.classList.add('active');
-        
-        // Clear card required attributes
-        document.getElementById('i-card-name').removeAttribute('required');
-        document.getElementById('i-card-number').removeAttribute('required');
-        // Add login required attributes
         document.getElementById('i-title').setAttribute('required', 'required');
         document.getElementById('i-pass').setAttribute('required', 'required');
     }
