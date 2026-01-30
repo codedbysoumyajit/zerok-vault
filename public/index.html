@@ -102,6 +102,12 @@
                 <input type="text" placeholder="Search items..." onkeyup="filterVault(this.value)">
             </div>
 
+            <div class="category-filters">
+                <button class="category-btn active" onclick="setCategory('all')" id="cat-all">All Items</button>
+                <button class="category-btn" onclick="setCategory('login')" id="cat-login">Logins</button>
+                <button class="category-btn" onclick="setCategory('card')" id="cat-card">Cards</button>
+            </div>
+
             <div id="vault-grid" class="grid-area"></div>
             
             <div id="empty-state" class="empty-state hidden">
@@ -121,28 +127,90 @@
                 <h3>New Item</h3>
                 <button onclick="closeModal()" class="icon-btn"><i class="ph ph-x"></i></button>
             </div>
+            
+            <div class="type-tabs">
+                <button type="button" class="type-tab active" onclick="switchItemType('login')" id="tab-login">Login</button>
+                <button type="button" class="type-tab" onclick="switchItemType('card')" id="tab-card">Card</button>
+            </div>
+            
             <form onsubmit="handleSaveItem(event)">
-                <div class="input-wrap">
-                    <label>Title</label>
-                    <input type="text" id="i-title" placeholder="e.g. Google" required>
-                </div>
-                <div class="input-wrap">
-                    <label>Website (optional)</label>
-                    <input type="url" id="i-website" placeholder="https://example.com">
-                </div>
-                <div class="input-wrap">
-                    <label>Username</label>
-                    <input type="text" id="i-user" placeholder="email@example.com">
-                </div>
-                <div class="input-wrap">
-                    <label>Password</label>
-                    <div class="row">
-                        <input type="text" id="i-pass" required placeholder="••••••••">
-                        <button type="button" onclick="genPass()" class="gen-btn" title="Generate">
-                            <i class="ph ph-magic-wand"></i>
-                        </button>
+                <div id="form-login" class="form-section">
+                    <div class="input-wrap">
+                        <label>Title</label>
+                        <input type="text" id="i-title" placeholder="e.g. Google" required>
+                    </div>
+                    <div class="input-wrap">
+                        <label>Website (optional)</label>
+                        <input type="url" id="i-website" placeholder="https://example.com">
+                    </div>
+                    <div class="input-wrap">
+                        <label>Username</label>
+                        <input type="text" id="i-user" placeholder="email@example.com">
+                    </div>
+                    <div class="input-wrap">
+                        <label>Password</label>
+                        <div class="row">
+                            <input type="text" id="i-pass" required placeholder="••••••••">
+                            <button type="button" onclick="genPass()" class="gen-btn" title="Generate">
+                                <i class="ph ph-magic-wand"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
+                
+                <div id="form-card" class="form-section hidden">
+                    <div class="input-wrap">
+                        <label>Card Name</label>
+                        <input type="text" id="i-card-name" placeholder="e.g. HDFC Credit Card">
+                    </div>
+                    <div class="input-wrap">
+                        <label>Cardholder Name</label>
+                        <input type="text" id="i-card-holder" placeholder="e.g. John Doe">
+                    </div>
+                    <div class="input-wrap">
+                        <label>Card Number</label>
+                        <input type="text" id="i-card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="input-wrap">
+                        <label>Brand</label>
+                        <select id="i-card-brand">
+                            <option value="Visa">Visa</option>
+                            <option value="Mastercard">Mastercard</option>
+                            <option value="RuPay">RuPay</option>
+                            <option value="American Express">American Express</option>
+                            <option value="Discover">Discover</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="input-wrap" style="flex: 1;">
+                            <label>Expiry Month</label>
+                            <select id="i-card-month">
+                                <option value="01">01 - January</option>
+                                <option value="02">02 - February</option>
+                                <option value="03">03 - March</option>
+                                <option value="04">04 - April</option>
+                                <option value="05">05 - May</option>
+                                <option value="06">06 - June</option>
+                                <option value="07">07 - July</option>
+                                <option value="08">08 - August</option>
+                                <option value="09">09 - September</option>
+                                <option value="10">10 - October</option>
+                                <option value="11">11 - November</option>
+                                <option value="12">12 - December</option>
+                            </select>
+                        </div>
+                        <div class="input-wrap" style="flex: 1;">
+                            <label>Expiry Year</label>
+                            <input type="text" id="i-card-year" placeholder="2026" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="input-wrap" style="margin-top: 15px;">
+                        <label>CVV</label>
+                        <input type="text" id="i-card-cvv" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+                
                 <button type="submit" class="btn-primary full">Encrypt & Save</button>
             </form>
         </div>
@@ -154,7 +222,7 @@
                 <h3 id="detail-title">Item Details</h3>
                 <button onclick="closeDetailModal()" class="icon-btn"><i class="ph ph-x"></i></button>
             </div>
-            <div>
+            <div id="detail-login" class="detail-section">
                 <div class="input-wrap" id="detail-website-wrap" style="display: none;">
                     <div class="detail-label">Website</div>
                     <div class="detail-row">
@@ -178,6 +246,50 @@
                     <div class="detail-row">
                         <div class="detail-value" id="detail-password"></div>
                         <button type="button" class="copy-icon-btn" onclick="copyDetailPassword()" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="detail-card" class="detail-section hidden">
+                <div class="input-wrap">
+                    <div class="detail-label">Cardholder Name</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-card-holder"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetail('detail-card-holder')" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">Card Number</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-card-number"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetail('detail-card-number')" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">Brand</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-card-brand"></div>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">Expiry Date</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-card-expiry"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetail('detail-card-expiry')" title="Copy">
+                            <i class="ph ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="input-wrap">
+                    <div class="detail-label">CVV</div>
+                    <div class="detail-row">
+                        <div class="detail-value" id="detail-card-cvv"></div>
+                        <button type="button" class="copy-icon-btn" onclick="copyDetail('detail-card-cvv')" title="Copy">
                             <i class="ph ph-copy"></i>
                         </button>
                     </div>

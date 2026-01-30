@@ -1,7 +1,8 @@
 const API = "/api/v1";
 let vaultKey = null;
 let allItems = [];
-let currentView = 'all'; 
+let currentView = 'all';
+let currentCategory = 'all'; 
 
 // --- Crypto ---
 function buf2hex(buf) { return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join(''); }
@@ -76,16 +77,37 @@ function setView(view) {
     renderVault();
 }
 
+function setCategory(category) {
+    currentCategory = category;
+    document.querySelectorAll('.category-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(`cat-${category}`).classList.add('active');
+    renderVault();
+}
+
 function renderVault(filterText = '') {
     const grid = document.getElementById('vault-grid');
     if(!grid) return;
     grid.innerHTML = '';
     
     const filtered = allItems.filter(item => {
-        const matches = (item.title+item.username).toLowerCase().includes(filterText.toLowerCase());
-        if (currentView === 'trash') return item.isDeleted && matches;
-        if (currentView === 'favorites') return !item.isDeleted && item.isFavorite && matches;
-        return !item.isDeleted && matches; 
+        const searchText = item.type === 'card' 
+            ? (item.title + item.cardHolder + item.cardNumber)
+            : (item.title + item.username);
+        const matches = searchText.toLowerCase().includes(filterText.toLowerCase());
+        
+        // View filter
+        let viewMatch = false;
+        if (currentView === 'trash') viewMatch = item.isDeleted;
+        else if (currentView === 'favorites') viewMatch = !item.isDeleted && item.isFavorite;
+        else viewMatch = !item.isDeleted;
+        
+        // Category filter
+        let categoryMatch = false;
+        if (currentCategory === 'all') categoryMatch = true;
+        else if (currentCategory === 'login') categoryMatch = item.type === 'login' || !item.type;
+        else if (currentCategory === 'card') categoryMatch = item.type === 'card';
+        
+        return matches && viewMatch && categoryMatch;
     });
 
     toggleElem('empty-state', filtered.length === 0);
@@ -112,16 +134,37 @@ function renderVault(filterText = '') {
             `;
         }
 
-        const iconHTML = item.website 
-            ? `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="this.parentElement.innerHTML='<i class=\'ph ph-key\'></i>'" style="width: 24px; height: 24px; border-radius: 4px;">` 
-            : `<i class="ph ph-key"></i>`;
+        let iconHTML;
+        if (item.type === 'card') {
+            const brandStyles = {
+                'Visa': { color: '#1A1F71', text: 'VISA', bg: '#f7f7f7' },
+                'Mastercard': { color: '#EB001B', text: 'Mastercard', bg: '#f7f7f7' },
+                'RuPay': { color: '#097939', text: 'RuPay', bg: '#f7f7f7' },
+                'American Express': { color: '#006FCF', text: 'AMEX', bg: '#f7f7f7' },
+                'Discover': { color: '#FF6000', text: 'Discover', bg: '#f7f7f7' }
+            };
+            const brandStyle = brandStyles[item.cardBrand];
+            if (brandStyle) {
+                iconHTML = `<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: ${brandStyle.bg}; color: ${brandStyle.color}; font-weight: 800; font-size: 8px; border-radius: 6px; letter-spacing: -0.3px;">${brandStyle.text}</div>`;
+            } else {
+                iconHTML = `<i class="ph ph-credit-card"></i>`;
+            }
+        } else if (item.website) {
+            iconHTML = `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="this.parentElement.innerHTML='<i class=\'ph ph-key\'></i>'" style="width: 24px; height: 24px; border-radius: 4px;">`;
+        } else {
+            iconHTML = `<i class="ph ph-key"></i>`;
+        }
+        
+        const subtitle = item.type === 'card' 
+            ? (item.cardNumber ? '•••• ' + item.cardNumber.slice(-4) : 'No card number')
+            : (item.username || 'No username');
         
         card.innerHTML = `
             <div class="card-top">
                 <div class="card-icon">${iconHTML}</div>
                 <div class="card-info">
                     <h3>${item.title}</h3>
-                    <p>${item.username || 'No username'}</p>
+                    <p>${subtitle}</p>
                 </div>
             </div>
             <div class="card-actions">${btns}</div>
@@ -146,13 +189,31 @@ async function handleSaveItem(e) {
     btn.innerText = "Encrypting...";
 
     try {
-        const payload = {
-            title: document.getElementById('i-title').value,
-            website: document.getElementById('i-website').value,
-            username: document.getElementById('i-user').value,
-            password: document.getElementById('i-pass').value,
-            isFavorite: false, isDeleted: false, createdAt: Date.now()
-        };
+        const itemType = document.getElementById('form-login').classList.contains('hidden') ? 'card' : 'login';
+        
+        let payload;
+        if (itemType === 'card') {
+            payload = {
+                type: 'card',
+                title: document.getElementById('i-card-name').value,
+                cardHolder: document.getElementById('i-card-holder').value,
+                cardNumber: document.getElementById('i-card-number').value,
+                cardBrand: document.getElementById('i-card-brand').value,
+                expiryMonth: document.getElementById('i-card-month').value,
+                expiryYear: document.getElementById('i-card-year').value,
+                cvv: document.getElementById('i-card-cvv').value,
+                isFavorite: false, isDeleted: false, createdAt: Date.now()
+            };
+        } else {
+            payload = {
+                type: 'login',
+                title: document.getElementById('i-title').value,
+                website: document.getElementById('i-website').value,
+                username: document.getElementById('i-user').value,
+                password: document.getElementById('i-pass').value,
+                isFavorite: false, isDeleted: false, createdAt: Date.now()
+            };
+        }
         
         const { ct, iv } = await encrypt(vaultKey, payload);
         const res = await fetch(API + '/vault', {
@@ -272,15 +333,33 @@ let currentDetailItem = null;
 function openDetailModal(item) {
     currentDetailItem = item;
     document.getElementById('detail-title').innerText = item.title;
-    document.getElementById('detail-username').innerText = item.username || 'No username';
-    document.getElementById('detail-password').innerText = item.password;
     
-    const websiteWrap = document.getElementById('detail-website-wrap');
-    if (item.website) {
-        document.getElementById('detail-website').innerText = item.website;
-        websiteWrap.style.display = 'block';
+    const loginSection = document.getElementById('detail-login');
+    const cardSection = document.getElementById('detail-card');
+    
+    if (item.type === 'card') {
+        loginSection.classList.add('hidden');
+        cardSection.classList.remove('hidden');
+        
+        document.getElementById('detail-card-holder').innerText = item.cardHolder || 'N/A';
+        document.getElementById('detail-card-number').innerText = item.cardNumber || 'N/A';
+        document.getElementById('detail-card-brand').innerText = item.cardBrand || 'N/A';
+        document.getElementById('detail-card-expiry').innerText = `${item.expiryMonth}/${item.expiryYear}`;
+        document.getElementById('detail-card-cvv').innerText = item.cvv || 'N/A';
     } else {
-        websiteWrap.style.display = 'none';
+        cardSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+        
+        document.getElementById('detail-username').innerText = item.username || 'No username';
+        document.getElementById('detail-password').innerText = item.password;
+        
+        const websiteWrap = document.getElementById('detail-website-wrap');
+        if (item.website) {
+            document.getElementById('detail-website').innerText = item.website;
+            websiteWrap.style.display = 'block';
+        } else {
+            websiteWrap.style.display = 'none';
+        }
     }
     
     const modal = document.getElementById('detail-modal');
@@ -312,6 +391,46 @@ function copyDetailPassword() {
 function openDetailWebsite() {
     if (currentDetailItem && currentDetailItem.website) {
         window.open(currentDetailItem.website, '_blank', 'noopener,noreferrer');
+    }
+}
+
+function switchItemType(type) {
+    const loginForm = document.getElementById('form-login');
+    const cardForm = document.getElementById('form-card');
+    const loginTab = document.getElementById('tab-login');
+    const cardTab = document.getElementById('tab-card');
+    
+    if (type === 'card') {
+        loginForm.classList.add('hidden');
+        cardForm.classList.remove('hidden');
+        loginTab.classList.remove('active');
+        cardTab.classList.add('active');
+        
+        // Clear login required attributes
+        document.getElementById('i-title').removeAttribute('required');
+        document.getElementById('i-pass').removeAttribute('required');
+        // Add card required attributes
+        document.getElementById('i-card-name').setAttribute('required', 'required');
+        document.getElementById('i-card-number').setAttribute('required', 'required');
+    } else {
+        cardForm.classList.add('hidden');
+        loginForm.classList.remove('hidden');
+        cardTab.classList.remove('active');
+        loginTab.classList.add('active');
+        
+        // Clear card required attributes
+        document.getElementById('i-card-name').removeAttribute('required');
+        document.getElementById('i-card-number').removeAttribute('required');
+        // Add login required attributes
+        document.getElementById('i-title').setAttribute('required', 'required');
+        document.getElementById('i-pass').setAttribute('required', 'required');
+    }
+}
+
+function copyDetail(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    if (text && text !== 'N/A') {
+        navigator.clipboard.writeText(text);
     }
 }
 
