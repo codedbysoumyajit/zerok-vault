@@ -26,7 +26,9 @@ func GetVault(c *fiber.Ctx) error {
 	if err := cursor.All(context.Background(), &items); err != nil {
 		return c.JSON([]interface{}{})
 	}
-	if items == nil { return c.JSON([]interface{}{}) }
+	if items == nil {
+		return c.JSON([]interface{}{})
+	}
 	return c.JSON(items)
 }
 
@@ -35,7 +37,9 @@ func AddItem(c *fiber.Ctx) error {
 		EncryptedData string `json:"encrypted_data"`
 		IV            string `json:"iv"`
 	}
-	if err := c.BodyParser(&req); err != nil { return c.SendStatus(400) }
+	if err := c.BodyParser(&req); err != nil {
+		return c.SendStatus(400)
+	}
 
 	item := models.VaultItem{
 		UserID:        getUserID(c),
@@ -58,7 +62,9 @@ func UpdateItem(c *fiber.Ctx) error {
 		EncryptedData string `json:"encrypted_data"`
 		IV            string `json:"iv"`
 	}
-	if err := c.BodyParser(&req); err != nil { return c.SendStatus(400) }
+	if err := c.BodyParser(&req); err != nil {
+		return c.SendStatus(400)
+	}
 
 	_, err := database.DB.Collection("items").UpdateOne(
 		context.Background(),
@@ -69,7 +75,9 @@ func UpdateItem(c *fiber.Ctx) error {
 			"updated_at":     time.Now(),
 		}},
 	)
-	if err != nil { return c.SendStatus(500) }
+	if err != nil {
+		return c.SendStatus(500)
+	}
 	return c.SendStatus(200)
 }
 
@@ -83,6 +91,8 @@ func DeleteItem(c *fiber.Ctx) error {
 		context.Background(),
 		bson.M{"_id": itemID, "user_id": userID},
 	)
-	if err != nil { return c.SendStatus(500) }
+	if err != nil {
+		return c.SendStatus(500)
+	}
 	return c.SendStatus(200)
 }
