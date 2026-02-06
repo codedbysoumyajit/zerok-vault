@@ -47,8 +47,8 @@
       "url": "/?action=new-login",
       "icons": [
         {
-          "src": "/icons/favicon-96x96.png",
-          "sizes": "96x96",
+          "src": "/icons/key.jpg",
+          "sizes": "500x500",
           "type": "image/png"
         }
       ]
@@ -60,8 +60,8 @@
       "url": "/?action=new-card",
       "icons": [
         {
-          "src": "/icons/favicon-96x96.png",
-          "sizes": "96x96",
+          "src": "/icons/card.jpg",
+          "sizes": "500x500",
           "type": "image/png"
         }
       ]
@@ -73,8 +73,8 @@
       "url": "/?view=favorites",
       "icons": [
         {
-          "src": "/icons/favicon-96x96.png",
-          "sizes": "96x96",
+          "src": "/icons/heart.jpg",
+          "sizes": "500x500",
           "type": "image/png"
         }
       ]
@@ -90,9 +90,9 @@
     },
     {
       "src": "/icons/Screenshot-mobile.png",
-      "sizes": "202x444",
+      "sizes": "540x720",
       "type": "image/png",
-      "form_factor": "wide",
+      "form_factor": "narrow",
       "label": "ZeroK Vault Mobile"
     }
   ],

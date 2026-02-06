@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#2563eb">
     <meta name="description" content="ZeroK Vault - Secure, self-hostable, zero-knowledge password manager with end-to-end encryption">
     <meta name="keywords" content="password manager, zero-knowledge, encryption, security, vault, credentials">
@@ -518,8 +518,56 @@
         </div>
     </div>
 
+    <!-- PWA Toast Notification -->
+    <div id="pwa-toast" class="pwa-toast hidden">
+        <div class="pwa-toast-content">
+            <i class="ph-fill ph-download-simple pwa-toast-icon"></i>
+            <div class="pwa-toast-text">
+                <strong id="pwa-toast-title">Install ZeroK Vault</strong>
+                <span id="pwa-toast-message">Install the app for a better experience</span>
+            </div>
+            <div class="pwa-toast-actions">
+                <button id="pwa-toast-action" class="pwa-toast-btn primary">Install</button>
+                <button id="pwa-toast-close" class="pwa-toast-btn secondary">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
     <script>
+        // PWA Toast Notification Functions
+        function showPWAToast(title, message, actionText, onAction, icon = 'ph-download-simple') {
+            const toast = document.getElementById('pwa-toast');
+            const toastTitle = document.getElementById('pwa-toast-title');
+            const toastMessage = document.getElementById('pwa-toast-message');
+            const toastAction = document.getElementById('pwa-toast-action');
+            const toastIcon = toast.querySelector('.pwa-toast-icon');
+            const toastClose = document.getElementById('pwa-toast-close');
+
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            toastAction.textContent = actionText;
+            toastIcon.className = `ph-fill ${icon} pwa-toast-icon`;
+
+            toast.classList.remove('hidden');
+
+            // Handle action button
+            toastAction.onclick = () => {
+                onAction();
+                hidePWAToast();
+            };
+
+            // Handle close button
+            toastClose.onclick = hidePWAToast;
+        }
+
+        function hidePWAToast() {
+            const toast = document.getElementById('pwa-toast');
+            toast.classList.add('hidden');
+        }
+
         // Register Service Worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -537,11 +585,17 @@
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New service worker available, show update notification
-                                    if (confirm('A new version of ZeroK Vault is available. Reload to update?')) {
-                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                        window.location.reload();
-                                    }
+                                    // New service worker available, show update toast
+                                    showPWAToast(
+                                        'Update Available',
+                                        'A new version of ZeroK Vault is ready',
+                                        'Update',
+                                        () => {
+                                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                            window.location.reload();
+                                        },
+                                        'ph-arrow-clockwise'
+                                    );
                                 }
                             });
                         });
@@ -563,33 +617,30 @@
             e.preventDefault();
             deferredPrompt = e;
             
-            // Show custom install prompt (optional - you can add a button for this)
-            console.log('💡 PWA install available');
-            
-            // Example: Create install button dynamically
-            // Uncomment if you want an install button in your UI
-            /*
-            const installBtn = document.createElement('button');
-            installBtn.textContent = 'Install App';
-            installBtn.className = 'btn btn-primary';
-            installBtn.style.position = 'fixed';
-            installBtn.style.bottom = '20px';
-            installBtn.style.right = '20px';
-            installBtn.style.zIndex = '10000';
-            installBtn.onclick = async () => {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                console.log(`User response to install prompt: ${outcome}`);
-                deferredPrompt = null;
-                installBtn.remove();
-            };
-            document.body.appendChild(installBtn);
-            */
+            // Show install toast
+            showPWAToast(
+                'Install ZeroK Vault',
+                'Install the app for quick access and offline support',
+                'Install',
+                async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`User response to install prompt: ${outcome}`);
+                        if (outcome === 'accepted') {
+                            console.log('✅ PWA installation accepted');
+                        }
+                        deferredPrompt = null;
+                    }
+                },
+                'ph-download-simple'
+            );
         });
 
         // Track installation
         window.addEventListener('appinstalled', () => {
             console.log('✅ PWA installed successfully');
+            hidePWAToast();
             deferredPrompt = null;
         });
 

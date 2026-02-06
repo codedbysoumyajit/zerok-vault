@@ -60,11 +60,10 @@ ZeroK Vault uses a **Two-Key Architecture** to ensure security:
 
 We are actively working on the following features:
 
-- [ ] **PWA Support:** Install as a native app on iOS/Android.
+- [x] **PWA Support:** Install as a native app on iOS/Android.
 - [x] **Identity Storage:** Form filling profiles (Name, Address, Phone).
 - [x] **Credit Cards:** Secure storage for payment methods.
 - [x] **Secure Notes:** Encrypted text blobs for non-password data.
-- [ ] **SSH Keys:** Storage for developer keys.
 - [x] **Website Launching:** Click-to-open URLs from vault items.
 - [x] **Category Management:** Folders and tagging system.
 - [ ] **Duress Mode:** "Panic" password that wipes data or opens a fake vault.

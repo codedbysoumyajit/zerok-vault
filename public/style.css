@@ -25,9 +25,49 @@ body.dark-mode {
     --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none; 
+}
 
-body { background: var(--bg-body); color: var(--text-main); height: 100dvh; overflow: hidden; transition: background 0.3s; font-size: 16px; }
+/* Allow text selection for inputs and contenteditable elements */
+input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Allow selection for detail values that need to be copied */
+.detail-value, .card-item-name, .card-item-desc {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+body { 
+    background: var(--bg-body); 
+    color: var(--text-main); 
+    height: 100dvh; 
+    overflow: hidden; 
+    transition: background 0.3s; 
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+}
 
 /* --- Auth --- */
 .auth-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(circle at top right, var(--primary-glow), transparent 60%); position: relative; }
@@ -175,3 +215,20 @@ body { background: var(--bg-body); color: var(--text-main); height: 100dvh; over
 .hidden { display: none !important; }
 .empty-state { text-align: center; margin-top: 50px; opacity: 0.5; width: 100%; grid-column: 1 / -1; }
 .empty-state i { font-size: 48px; margin-bottom: 10px; }
+
+/* PWA Toast Notification */
+.pwa-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; animation: slideUp 0.3s ease-out; max-width: 500px; width: calc(100% - 40px); }
+.pwa-toast.hidden { display: none; }
+.pwa-toast-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); }
+.pwa-toast-icon { font-size: 32px; color: var(--primary); flex-shrink: 0; }
+.pwa-toast-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.pwa-toast-text strong { color: var(--text-main); font-size: 15px; font-weight: 600; }
+.pwa-toast-text span { color: var(--text-muted); font-size: 13px; }
+.pwa-toast-actions { display: flex; gap: 8px; align-items: center; }
+.pwa-toast-btn { border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; border-radius: 8px; }
+.pwa-toast-btn.primary { background: var(--primary); color: white; padding: 10px 20px; }
+.pwa-toast-btn.primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px var(--primary-glow); }
+.pwa-toast-btn.secondary { background: transparent; color: var(--text-muted); padding: 8px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
+.pwa-toast-btn.secondary:hover { background: var(--bg-hover); color: var(--text-main); }
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@media (max-width: 768px) { .pwa-toast { max-width: calc(100% - 20px); width: calc(100% - 20px); bottom: 10px; } .pwa-toast-content { padding: 14px 16px; gap: 12px; } .pwa-toast-icon { font-size: 28px; } .pwa-toast-text strong { font-size: 14px; } .pwa-toast-text span { font-size: 12px; } .pwa-toast-btn.primary { padding: 8px 16px; font-size: 13px; } }

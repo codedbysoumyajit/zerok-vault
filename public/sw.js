@@ -20,7 +20,14 @@ const STATIC_ASSETS = [
   '/icons/web-app-manifest-192x192.png',
   '/icons/web-app-manifest-512x512.png',
   'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
-  'https://unpkg.com/@phosphor-icons/web'
+  'https://unpkg.com/@phosphor-icons/web',
+  '/icons/key.jpg',
+  '/icons/card.jpg',
+  '/icons/heart.jpg',
+  '/icons/logo-transparent.png',
+  '/icons/Screenshot-desktop.png',
+  '/icons/Screenshot-mobile.png',
+  '/icons/favicon.ico'
 ];
 
 // Maximum cache sizes
@@ -95,10 +102,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then(response => {
+          // Clone response before using it
+          const responseClone = response.clone();
+          
           // Cache successful navigation
           if (response && response.status === 200) {
             caches.open(DYNAMIC_CACHE).then(cache => {
-              cache.put(request, response.clone());
+              cache.put(request, responseClone);
             });
           }
           return response;
