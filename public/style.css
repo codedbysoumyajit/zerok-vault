@@ -36,7 +36,7 @@ body { background: var(--bg-body); color: var(--text-main); height: 100dvh; over
 .glass-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
 .auth-card { padding: 40px 30px; width: 100%; max-width: 380px; text-align: center; }
 .brand-large { margin-bottom: 30px; }
-.icon-box { width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 15px; box-shadow: 0 10px 20px var(--primary-glow); }
+.icon-box { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 15px; }
 
 /* INPUTS */
 .input-wrap { position: relative; margin-bottom: 15px; text-align: left; }

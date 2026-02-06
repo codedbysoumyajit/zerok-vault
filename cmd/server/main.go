@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"zerok-vault/internal/database"
 	"zerok-vault/internal/handlers"
 
@@ -31,7 +32,7 @@ func main() {
 	// Protected (JWT Required)
 	// We create a new group for vault operations and apply JWT middleware to it
 	vaultAPI := api.Group("/vault")
-	
+
 	vaultAPI.Use(jwtware.New(jwtware.Config{
 		SigningKey: []byte("my-local-secret-key"),
 	}))
@@ -42,5 +43,9 @@ func main() {
 	vaultAPI.Delete("/:id", handlers.DeleteItem)
 
 	// 5. Start Server
-	app.Listen(":3000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	app.Listen(":" + port)
 }

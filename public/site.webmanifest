@@ -82,18 +82,18 @@
   ],
   "screenshots": [
     {
-      "src": "/icons/web-app-manifest-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "ZeroK Vault home screen"
-    },
-    {
-      "src": "/icons/web-app-manifest-512x512.png",
-      "sizes": "512x512",
+      "src": "/icons/Screenshot-desktop.png",
+      "sizes": "1344x640",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "ZeroK Vault dashboard"
+      "label": "ZeroK Vault Desktop"
+    },
+    {
+      "src": "/icons/Screenshot-mobile.png",
+      "sizes": "202x444",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "ZeroK Vault Mobile"
     }
   ],
   "related_applications": [],
