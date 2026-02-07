@@ -13,7 +13,7 @@ const STATIC_ASSETS = [
   '/offline.html',
   '/style.css',
   '/app.js',
-  '/site.webmanifest',
+  '/manifest.json',
   '/icons/favicon-96x96.png',
   '/icons/favicon.svg',
   '/icons/apple-touch-icon.png',
@@ -100,7 +100,7 @@ self.addEventListener('fetch', (event) => {
   // Special handling for navigation requests (page loads)
   if (request.mode === 'navigate' || request.destination === 'document') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then(response => {
           // Clone response before using it
           const responseClone = response.clone();
@@ -117,7 +117,11 @@ self.addEventListener('fetch', (event) => {
           // Network failed - show offline page
           return caches.match('/offline.html')
             .then(offlineResponse => {
-              return offlineResponse || caches.match('/index.html');
+              if (offlineResponse) {
+                return offlineResponse;
+              }
+              // Fallback to cached index.html if offline.html is not available
+              return caches.match('/index.html');
             });
         })
     );
