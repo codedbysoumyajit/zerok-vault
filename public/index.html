@@ -47,6 +47,9 @@
                 <div class="input-wrap">
                     <i class="ph ph-lock-key input-icon"></i>
                     <input type="password" id="l-pass" placeholder="Master Password" required>
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i class="ph ph-eye"></i>
+                    </button>
                 </div>
                 <button type="submit" class="btn-primary full-width">Unlock Vault</button>
                 <p class="switch-link">New? <a onclick="toggleAuth('register')">Create Account</a></p>
@@ -59,7 +62,17 @@
                 </div>
                 <div class="input-wrap">
                     <i class="ph ph-lock-key input-icon"></i>
-                    <input type="password" id="r-pass" placeholder="Create Master Key" required>
+                    <input type="password" id="r-pass" placeholder="Create Master Key" required minlength="8">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i class="ph ph-eye"></i>
+                    </button>
+                </div>
+                <div class="input-wrap">
+                    <i class="ph ph-lock-key input-icon"></i>
+                    <input type="password" id="r-pass-confirm" placeholder="Confirm Master Key" required minlength="8">
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility(this)">
+                        <i class="ph ph-eye"></i>
+                    </button>
                 </div>
                 <button type="submit" class="btn-primary full-width">Create Vault</button>
                 <p class="switch-link">Have an account? <a onclick="toggleAuth('login')">Log In</a></p>
@@ -71,7 +84,7 @@
         
         <nav class="sidebar">
             <div class="logo-area">
-                <img src="icons/logo-transparent.png" alt="ZeroK Logo" style="width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(102, 126, 234, 0.3)) drop-shadow(0 4px 12px rgba(102, 126, 234, 0.2));"> <span>ZeroK</span>
+                <img src="icons/logo-transparent.png" alt="ZeroK Logo" style="width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(102, 126, 234, 0.3)) drop-shadow(0 4px 12px rgba(102, 126, 234, 0.2));"> <span>ZeroK</span>
             </div>
             
             <div class="nav-links">
@@ -105,7 +118,7 @@
                     <button onclick="toggleTheme()" class="icon-btn" title="Toggle Theme">
                         <i class="ph-fill ph-moon"></i>
                     </button>
-                    <button onclick="openModal()" class="btn-primary desktop-only">
+                    <button onclick="openNewItemModal()" class="btn-primary desktop-only">
                         <i class="ph ph-plus"></i> New Item
                     </button>
                 </div>
@@ -131,7 +144,7 @@
                 <p>Vault is empty</p>
             </div>
 
-            <button onclick="openModal()" class="fab mobile-only">
+            <button onclick="openNewItemModal()" class="fab mobile-only">
                 <i class="ph ph-plus"></i>
             </button>
         </main>

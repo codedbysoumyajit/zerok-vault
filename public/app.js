@@ -2,7 +2,8 @@ const API = "/api/v1";
 let vaultKey = null;
 let allItems = [];
 let currentView = 'all';
-let currentCategory = 'all'; 
+let currentCategory = 'all';
+let editingItemId = null; 
 
 // --- Crypto ---
 function buf2hex(buf) { return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2,'0')).join(''); }
@@ -104,12 +105,68 @@ function openModal() {
     });
 }
 
+function openNewItemModal() {
+    editingItemId = null;
+    openModal();
+}
+
+function openEditModal(itemId) {
+    const item = allItems.find(x => x.id === itemId);
+    if (!item) return;
+    
+    editingItemId = itemId;
+    
+    // Switch to correct form
+    const itemType = item.type || 'login';
+    switchItemType(itemType);
+    
+    // Pre-fill form based on type
+    if (itemType === 'card') {
+        document.getElementById('i-card-name').value = item.title || '';
+        document.getElementById('i-card-holder').value = item.cardHolder || '';
+        document.getElementById('i-card-number').value = item.cardNumber || '';
+        document.getElementById('i-card-brand').value = item.cardBrand || '';
+        document.getElementById('i-card-month').value = item.expiryMonth || '';
+        document.getElementById('i-card-year').value = item.expiryYear || '';
+        document.getElementById('i-card-cvv').value = item.cvv || '';
+    } else if (itemType === 'identity') {
+        document.getElementById('i-identity-title').value = item.title || '';
+        document.getElementById('i-identity-firstname').value = item.firstName || '';
+        document.getElementById('i-identity-middlename').value = item.middleName || '';
+        document.getElementById('i-identity-lastname').value = item.lastName || '';
+        document.getElementById('i-identity-username').value = item.username || '';
+        document.getElementById('i-identity-company').value = item.company || '';
+        document.getElementById('i-identity-email').value = item.email || '';
+        document.getElementById('i-identity-phone').value = item.phone || '';
+        document.getElementById('i-identity-ssn').value = item.ssn || '';
+        document.getElementById('i-identity-passport').value = item.passport || '';
+        document.getElementById('i-identity-license').value = item.license || '';
+        document.getElementById('i-identity-address1').value = item.address1 || '';
+        document.getElementById('i-identity-address2').value = item.address2 || '';
+        document.getElementById('i-identity-city').value = item.city || '';
+        document.getElementById('i-identity-state').value = item.state || '';
+        document.getElementById('i-identity-postal').value = item.postal || '';
+        document.getElementById('i-identity-country').value = item.country || '';
+    } else if (itemType === 'note') {
+        document.getElementById('i-note-name').value = item.title || '';
+        document.getElementById('i-note-content').value = item.notes || '';
+    } else {
+        document.getElementById('i-title').value = item.title || '';
+        document.getElementById('i-website').value = item.website || '';
+        document.getElementById('i-user').value = item.username || '';
+        document.getElementById('i-pass').value = item.password || '';
+    }
+    
+    openModal();
+}
+
 function closeModal() {
     const modal = document.getElementById('modal');
     modal.classList.remove('open');
     setTimeout(() => {
         modal.classList.add('hidden');
         document.querySelector('#modal form').reset();
+        editingItemId = null;
     }, 250);
 }
 
@@ -182,6 +239,7 @@ function renderVault(filterText = '') {
                 <button onclick="event.stopPropagation(); toggleFav('${item.id}')" class="action-btn ${activeClass}" title="Favorite">
                     <i class="${heartClass}"></i>
                 </button>
+                <button onclick="event.stopPropagation(); openEditModal('${item.id}')" class="action-btn" title="Edit"><i class="ph ph-pencil-simple"></i></button>
                 <button onclick="event.stopPropagation(); softDelete('${item.id}')" class="action-btn" title="Archive"><i class="ph ph-trash"></i></button>
             `;
         }
@@ -316,20 +374,51 @@ async function handleSaveItem(e) {
             };
         }
         
-        const { ct, iv } = await encrypt(vaultKey, payload);
-        const res = await fetch(API + '/vault', {
-            method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ encrypted_data: ct, iv: iv })
-        });
+        // Check if editing or creating
+        if (editingItemId) {
+            // Update existing item
+            const existingItem = allItems.find(x => x.id === editingItemId);
+            if (existingItem) {
+                payload.id = editingItemId;
+                payload.isFavorite = existingItem.isFavorite;
+                payload.isDeleted = existingItem.isDeleted;
+                payload.createdAt = existingItem.createdAt;
+                
+                const { ct, iv } = await encrypt(vaultKey, payload);
+                const res = await fetch(API + `/vault/${editingItemId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ encrypted_data: ct, iv: iv })
+                });
+                
+                if (!res.ok) throw new Error("Failed to update");
+                
+                // Update in local array
+                const index = allItems.findIndex(x => x.id === editingItemId);
+                if (index !== -1) allItems[index] = payload;
+                
+                closeModal();
+                showToast('Item updated successfully', 'success');
+                editingItemId = null;
+            }
+        } else {
+            // Create new item
+            const { ct, iv } = await encrypt(vaultKey, payload);
+            const res = await fetch(API + '/vault', {
+                method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token'), 'Content-Type': 'application/json' },
+                body: JSON.stringify({ encrypted_data: ct, iv: iv })
+            });
+            
+            if (!res.ok) throw new Error("Failed");
+            const json = await res.json();
+            payload.id = json.id; 
+            allItems.push(payload);
+            
+            closeModal();
+            const itemTypes = { login: 'Login', card: 'Card', identity: 'Identity', note: 'Secure Note' };
+            showToast(`${itemTypes[payload.type] || 'Item'} added successfully`, 'success');
+        }
         
-        if (!res.ok) throw new Error("Failed");
-        const json = await res.json();
-        payload.id = json.id; 
-        allItems.push(payload);
-        
-        closeModal();
-        const itemTypes = { login: 'Login', card: 'Card', identity: 'Identity', note: 'Secure Note' };
-        showToast(`${itemTypes[payload.type] || 'Item'} added successfully`, 'success');
         setTimeout(renderVault, 250);
         
     } catch(err) { showToast("Error: " + err.message, 'error'); } 
@@ -386,7 +475,7 @@ async function permDelete(id) {
 // --- Auth ---
 async function handleLogin(e) {
     e.preventDefault();
-    const btn = document.querySelector('#login-form button');
+    const btn = document.querySelector('#login-form button[type="submit"]');
     btn.innerText = "Verifying...";
     setTimeout(async () => {
         try {
@@ -423,12 +512,23 @@ async function handleLogin(e) {
 
 async function handleRegister(e) {
     e.preventDefault();
-    const btn = document.querySelector('#register-form button');
+    const btn = document.querySelector('#register-form button[type="submit"]');
     btn.innerText = "Generating...";
     setTimeout(async () => {
         try {
             const email = document.getElementById('r-email').value;
             const pass = document.getElementById('r-pass').value;
+            const passConfirm = document.getElementById('r-pass-confirm').value;
+            
+            // Validate password confirmation
+            if (pass !== passConfirm) {
+                throw new Error('Passwords do not match');
+            }
+            
+            if (pass.length < 8) {
+                throw new Error('Password must be at least 8 characters');
+            }
+            
             const saltHex = buf2hex(crypto.getRandomValues(new Uint8Array(16)));
             const keys = await deriveKeys(pass, saltHex);
             const vaultK = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
@@ -449,6 +549,21 @@ async function handleRegister(e) {
 }
 
 function toggleAuth(v) { toggleElem('login-form', v==='login'); toggleElem('register-form', v==='register'); }
+
+function togglePasswordVisibility(button) {
+    const icon = button.querySelector('i');
+    const input = button.parentElement.querySelector('input[type="password"], input[type="text"]');
+    
+    if (!input || !icon) return;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'ph ph-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'ph ph-eye';
+    }
+}
 
 function genPass() { 
     const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
