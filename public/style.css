@@ -127,7 +127,7 @@ body {
 .category-btn:hover { border-color: var(--primary); color: var(--primary); }
 .category-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-.grid-area { flex: 1; overflow-y: auto; padding: 0 30px 100px; display: flex; flex-direction: column; gap: 12px; align-content: start; }
+.grid-area { flex: 1; overflow-y: auto; padding: 0 30px 100px; display: flex; flex-direction: column; gap: 12px; }
 
 /* Cards */
 .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; position: relative; transition: 0.2s; display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-card); cursor: pointer; }
@@ -213,14 +213,42 @@ body {
 
 .full { width: 100%; margin-top: 15px; }
 .hidden { display: none !important; }
-.empty-state { text-align: center; margin-top: 50px; opacity: 0.5; width: 100%; grid-column: 1 / -1; }
-.empty-state i { font-size: 48px; margin-bottom: 10px; }
+.empty-state { 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; 
+    opacity: 0.5; 
+    width: auto;
+    padding: 20px;
+}
+.empty-state i { font-size: 48px; margin-bottom: 10px; display: block; }
 
 /* PWA Toast Notification */
-.pwa-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10000; animation: slideUp 0.3s ease-out; max-width: 500px; width: calc(100% - 40px); }
+.pwa-toast { 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 10001; 
+    animation: slideUpToast 0.3s ease-out; 
+    max-width: 400px; 
+    width: calc(100% - 40px); 
+    transition: all 0.3s ease-out;
+}
 .pwa-toast.hidden { display: none; }
-.pwa-toast-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); }
-.pwa-toast-icon { font-size: 32px; color: var(--primary); flex-shrink: 0; }
+.pwa-toast-content { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border); 
+    border-left: 4px solid var(--primary);
+    border-radius: 12px; 
+    padding: 16px 20px; 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); 
+}
+.pwa-toast-icon { font-size: 24px; color: var(--primary); flex-shrink: 0; }
 .pwa-toast-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .pwa-toast-text strong { color: var(--text-main); font-size: 15px; font-weight: 600; }
 .pwa-toast-text span { color: var(--text-muted); font-size: 13px; }
@@ -229,6 +257,123 @@ body {
 .pwa-toast-btn.primary { background: var(--primary); color: white; padding: 10px 20px; }
 .pwa-toast-btn.primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px var(--primary-glow); }
 .pwa-toast-btn.secondary { background: transparent; color: var(--text-muted); padding: 8px; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
-.pwa-toast-btn.secondary:hover { background: var(--bg-hover); color: var(--text-main); }
-@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-@media (max-width: 768px) { .pwa-toast { max-width: calc(100% - 20px); width: calc(100% - 20px); bottom: 10px; } .pwa-toast-content { padding: 14px 16px; gap: 12px; } .pwa-toast-icon { font-size: 28px; } .pwa-toast-text strong { font-size: 14px; } .pwa-toast-text span { font-size: 12px; } .pwa-toast-btn.primary { padding: 8px 16px; font-size: 13px; } }
+.pwa-toast-btn.secondary:hover { background: var(--bg-body); color: var(--text-main); }
+
+/* Adjust toast container when PWA toast is visible */
+#toast-container.with-pwa-toast {
+    bottom: 130px;
+}
+
+/* PWA Toast on login/auth page - center at bottom */
+#auth-view:not(.hidden) ~ .pwa-toast {
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+}
+
+@media (max-width: 768px) { 
+    .pwa-toast { 
+        max-width: none; 
+        width: calc(100% - 20px); 
+        bottom: 80px; 
+        right: 10px;
+        left: 10px;
+    } 
+    .pwa-toast-content { padding: 14px 16px; gap: 12px; } 
+    .pwa-toast-icon { font-size: 24px; } 
+    .pwa-toast-text strong { font-size: 14px; } 
+    .pwa-toast-text span { font-size: 12px; } 
+    .pwa-toast-btn.primary { padding: 8px 16px; font-size: 13px; }
+    
+    #toast-container.with-pwa-toast {
+        bottom: 180px;
+    }
+    
+    /* PWA Toast on login/auth page - center at bottom (mobile) */
+    #auth-view:not(.hidden) ~ .pwa-toast {
+        bottom: 20px;
+        left: 10px;
+        right: 10px;
+        transform: none;
+    }
+}
+
+/* Action Toast Notifications */
+#toast-container { 
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px; 
+    z-index: 10001; 
+    display: flex; 
+    flex-direction: column-reverse; 
+    gap: 0; 
+    max-width: 400px; 
+    transition: bottom 0.3s ease-out;
+}
+.toast { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border); 
+    border-radius: 12px; 
+    padding: 14px 18px; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); 
+    animation: slideUpToast 0.3s ease-out;
+    min-width: 280px;
+    transition: all 0.3s ease-out;
+    transform-origin: bottom center;
+}
+.toast:not(:last-child) {
+    margin-bottom: -10px;
+    transform: scale(0.95) translateY(-10px);
+    opacity: 0.7;
+    pointer-events: none;
+}
+.toast:not(:last-child):nth-last-child(2) {
+    transform: scale(0.9) translateY(-20px);
+    opacity: 0.5;
+}
+.toast:not(:last-child):nth-last-child(n+3) {
+    transform: scale(0.85) translateY(-30px);
+    opacity: 0.3;
+}
+.toast.success { border-left: 4px solid #10b981; }
+.toast.error { border-left: 4px solid var(--danger); }
+.toast.info { border-left: 4px solid var(--primary); }
+.toast-icon { font-size: 20px; flex-shrink: 0; }
+.toast.success .toast-icon { color: #10b981; }
+.toast.error .toast-icon { color: var(--danger); }
+.toast.info .toast-icon { color: var(--primary); }
+.toast-message { flex: 1; color: var(--text-main); font-size: 14px; font-weight: 500; }
+.toast-close { 
+    width: 24px; 
+    height: 24px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer; 
+    color: var(--text-muted); 
+    border-radius: 6px; 
+    transition: 0.2s;
+    font-size: 16px;
+}
+.toast-close:hover { background: var(--bg-body); color: var(--text-main); }
+@keyframes slideUpToast { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOutDown { to { opacity: 0; transform: translateY(30px); } }
+.toast.hiding { animation: fadeOutDown 0.3s ease-out forwards; }
+@media (max-width: 768px) { 
+    #toast-container { right: 10px; left: 10px; bottom: 100px; max-width: none; } 
+    .toast { min-width: auto; width: 100%; }
+    .toast:not(:last-child) {
+        margin-bottom: -8px;
+        transform: scale(0.96) translateY(-8px);
+    }
+    .toast:not(:last-child):nth-last-child(2) {
+        transform: scale(0.92) translateY(-16px);
+    }
+    .toast:not(:last-child):nth-last-child(n+3) {
+        transform: scale(0.88) translateY(-24px);
+    }
+}

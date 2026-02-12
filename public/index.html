@@ -552,6 +552,7 @@
             toastIcon.className = `ph-fill ${icon} pwa-toast-icon`;
 
             toast.classList.remove('hidden');
+            document.getElementById('toast-container').classList.add('with-pwa-toast');
 
             // Handle action button
             toastAction.onclick = () => {
@@ -566,6 +567,7 @@
         function hidePWAToast() {
             const toast = document.getElementById('pwa-toast');
             toast.classList.add('hidden');
+            document.getElementById('toast-container').classList.remove('with-pwa-toast');
         }
 
         // Register Service Worker for PWA functionality

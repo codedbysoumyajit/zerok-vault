@@ -49,6 +49,47 @@ function toggleElem(id, show) {
     if(el) show ? el.classList.remove('hidden') : el.classList.add('hidden');
 }
 
+// --- Toast Notifications ---
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        console.error('Toast container not found');
+        return;
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: 'ph-check-circle',
+        error: 'ph-x-circle',
+        info: 'ph-info'
+    };
+    
+    toast.innerHTML = `
+        <i class="ph-fill ${icons[type]} toast-icon"></i>
+        <span class="toast-message">${message}</span>
+        <span class="toast-close">
+            <i class="ph ph-x"></i>
+        </span>
+    `;
+    
+    // Add click handler for close button
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    });
+    
+    container.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('hiding');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 function openModal() {
     const modal = document.getElementById('modal');
     modal.classList.remove('hidden');
@@ -287,9 +328,11 @@ async function handleSaveItem(e) {
         allItems.push(payload);
         
         closeModal();
+        const itemTypes = { login: 'Login', card: 'Card', identity: 'Identity', note: 'Secure Note' };
+        showToast(`${itemTypes[payload.type] || 'Item'} added successfully`, 'success');
         setTimeout(renderVault, 250);
         
-    } catch(err) { alert("Error: " + err.message); } 
+    } catch(err) { showToast("Error: " + err.message, 'error'); } 
     finally { 
         btn.innerText = oldText; 
         btn.disabled = false; 
@@ -306,14 +349,38 @@ async function updateItem(item) {
     renderVault();
 }
 
-async function toggleFav(id) { const i = allItems.find(x => x.id===id); if(i) { i.isFavorite = !i.isFavorite; await updateItem(i); } }
-async function softDelete(id) { const i = allItems.find(x => x.id===id); if(i) { i.isDeleted = true; await updateItem(i); } }
-async function restoreItem(id) { const i = allItems.find(x => x.id===id); if(i) { i.isDeleted = false; await updateItem(i); } }
+async function toggleFav(id) { 
+    const i = allItems.find(x => x.id===id); 
+    if(i) { 
+        i.isFavorite = !i.isFavorite; 
+        await updateItem(i); 
+        showToast(i.isFavorite ? 'Added to favorites' : 'Removed from favorites', 'success');
+    } 
+}
+
+async function softDelete(id) { 
+    const i = allItems.find(x => x.id===id); 
+    if(i) { 
+        i.isDeleted = true; 
+        await updateItem(i); 
+        showToast('Item moved to trash', 'info');
+    } 
+}
+
+async function restoreItem(id) { 
+    const i = allItems.find(x => x.id===id); 
+    if(i) { 
+        i.isDeleted = false; 
+        await updateItem(i); 
+        showToast('Item restored successfully', 'success');
+    } 
+}
 async function permDelete(id) {
     if(!confirm("Delete forever?")) return;
     await fetch(API + `/vault/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } });
     allItems = allItems.filter(x => x.id !== id);
     renderVault();
+    showToast('Item deleted permanently', 'success');
 }
 
 // --- Auth ---
@@ -348,7 +415,8 @@ async function handleLogin(e) {
                 if(dec) { dec.id = r.id; if(dec.isFavorite==null) dec.isFavorite=false; if(dec.isDeleted==null) dec.isDeleted=false; allItems.push(dec); }
             }
             renderVault();
-        } catch(err) { alert(err.message); } 
+            showToast('Welcome back! Vault unlocked successfully', 'success');
+        } catch(err) { showToast(err.message, 'error'); } 
         finally { btn.innerText = "Unlock Vault"; }
     }, 50);
 }
@@ -370,9 +438,12 @@ async function handleRegister(e) {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ email, auth_key: keys.authKey, kdf_salt: saltHex, encrypted_vault_key: wrap.ct, vault_key_iv: wrap.iv })
             });
-            if(res.ok) { alert("Success! Log in now."); toggleAuth('login'); }
+            if(res.ok) { 
+                showToast('Account created successfully! Please login', 'success');
+                toggleAuth('login'); 
+            }
             else throw new Error("Email taken");
-        } catch(err) { alert(err.message); } 
+        } catch(err) { showToast(err.message, 'error'); } 
         finally { btn.innerText = "Create Vault"; }
     }, 50);
 }
@@ -383,6 +454,7 @@ function genPass() {
     const c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
     const v = crypto.getRandomValues(new Uint32Array(16));
     document.getElementById('i-pass').value = [...v].map(x => c[x % c.length]).join('');
+    showToast('Strong password generated', 'success');
 }
 function copyPass(t) { navigator.clipboard.writeText(t); }
 function logout() { localStorage.removeItem('token'); location.reload(); }
@@ -482,12 +554,14 @@ function closeDetailModal() {
 function copyDetailUsername() {
     if (currentDetailItem && currentDetailItem.username) {
         navigator.clipboard.writeText(currentDetailItem.username);
+        showToast('Username copied to clipboard', 'success');
     }
 }
 
 function copyDetailPassword() {
     if (currentDetailItem && currentDetailItem.password) {
         navigator.clipboard.writeText(currentDetailItem.password);
+        showToast('Password copied to clipboard', 'success');
     }
 }
 
@@ -550,6 +624,7 @@ function copyDetail(elementId) {
     const text = document.getElementById(elementId).innerText;
     if (text && text !== 'N/A') {
         navigator.clipboard.writeText(text);
+        showToast('Copied to clipboard', 'success');
     }
 }
 
