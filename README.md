@@ -104,7 +104,6 @@ We are actively working on the following features:
             zerok-vault
         ```
 
-
         The container starts MongoDB locally and stores its database in the `zerok-vault-data` volume, so your data stays after restarts.
 
         For production-style auth, add credentials and require them at startup:
