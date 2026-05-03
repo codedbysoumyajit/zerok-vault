@@ -84,49 +84,54 @@ We are actively working on the following features:
 
 ### Option A: 🐳 Docker (Recommended)
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/codedbysoumyajit/zerok-vault.git
-    cd zerok-vault
-    ```
+Clone the repository:
 
-2.  **Build the Image:**
-    ```bash
-    docker build -t zerok-vault .
-    ```
+```bash
+git clone https://github.com/codedbysoumyajit/zerok-vault.git
+cd zerok-vault
+```
 
-3.  **Run the Container:**
-        ```bash
-        docker run -d \
-            --name zerok-vault \
-            -p 3000:3000 \
-            -v zerok-vault-data:/data/db \
-            zerok-vault
-        ```
+Build the image:
 
-        The container starts MongoDB locally and stores its database in the `zerok-vault-data` volume, so your data stays after restarts.
+```bash
+docker build -t zerok-vault .
+```
 
-        For production-style auth, add credentials and require them at startup:
-        ```bash
-        docker run -d \
-            --name zerok-vault \
-            -e MONGO_REQUIRE_AUTH=true \
-            -e MONGO_APP_USERNAME=zerokvault \
-            -e MONGO_APP_PASSWORD='replace-with-a-strong-password' \
-            -p 3000:3000 \
-            -v zerok-vault-data:/data/db \
-            zerok-vault
-        ```
+Run the container:
 
-        In that mode, the container creates a MongoDB user on first start and uses that credential for the app connection. If your password contains URI-reserved characters, set `MONGO_URI` explicitly with an encoded password.
+```bash
+docker run -d \
+    --name zerok-vault \
+    -p 3000:3000 \
+    -v zerok-vault-data:/data/db \
+    zerok-vault
+```
 
-4.  **Stop / Start Later:**
-        ```bash
-        docker stop zerok-vault
-        docker start zerok-vault
-        ```
+The container starts MongoDB locally and stores its database in the `zerok-vault-data` volume, so your data stays after restarts.
 
-5.  **Access:** Open `http://localhost:3000` in your browser.
+For production-style auth, add credentials and require them at startup:
+
+```bash
+docker run -d \
+    --name zerok-vault \
+    -e MONGO_REQUIRE_AUTH=true \
+    -e MONGO_APP_USERNAME=zerokvault \
+    -e MONGO_APP_PASSWORD='replace-with-a-strong-password' \
+    -p 3000:3000 \
+    -v zerok-vault-data:/data/db \
+    zerok-vault
+```
+
+In that mode, the container creates a MongoDB user on first start and uses that credential for the app connection. If your password contains URI-reserved characters, set `MONGO_URI` explicitly with an encoded password.
+
+Stop / Start later:
+
+```bash
+docker stop zerok-vault
+docker start zerok-vault
+```
+
+Access: Open `http://localhost:3000` in your browser.
 
 ---
 
