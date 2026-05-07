@@ -67,21 +67,7 @@ go mod download
 MONGO_URI=mongodb://localhost:27017 go run ./cmd/server/main.go
 ```
 
-## Single-image workflow (dev + run)
-
-The repository provides a single `Dockerfile` that can run both production and development modes.
-
-- Production (default): runs the built Go binary.
-- Dev (`DEV=true`): attempts to run `air -c .air.toml` for live reload. If you mount your repo into the container and add an `.air.toml`, edits to `*.go`, `*.js`, `*.css`, and frontend files will trigger rebuilds.
-
-Build and run production:
-
-```bash
-docker build -t zerok-vault .
-docker run -d --name zerok-vault -p 3000:3000 -v zerok-vault-data:/data/db zerok-vault
-```
-
-Run development (mount working tree):
+### Run development (mount working tree):
 
 ```bash
 docker run --rm -it \
@@ -92,10 +78,6 @@ docker run --rm -it \
   zerok-vault
 ```
 
-Notes:
-
-- If you want live rebuilds out-of-the-box, I can add a default `.air.toml` to the repo.
-- Single-image mode simplifies usage for open-source contributors but increases image size.
 
 ## Project Structure
 
