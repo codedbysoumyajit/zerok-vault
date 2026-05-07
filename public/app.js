@@ -105,6 +105,56 @@ function openModal() {
     });
 }
 
+// --- Card menu (three-dot) ---
+function closeCardMenu() {
+    const existing = document.querySelector('.card-menu');
+    if (existing) existing.remove();
+}
+
+function openCardMenu(e, id) {
+    closeCardMenu();
+    const item = allItems.find(x => x.id === id);
+    if (!item) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-menu';
+
+    // Build menu options depending on view/state
+    let menuHTML = '';
+    if (currentView === 'trash') {
+        menuHTML += `<button onclick="event.stopPropagation(); restoreItem('${id}'); closeCardMenu();">Restore</button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); permDelete('${id}'); closeCardMenu();" class="danger">Delete Forever</button>`;
+    } else {
+        const favText = item.isFavorite ? 'Unfavorite' : 'Favorite';
+        menuHTML += `<button onclick="event.stopPropagation(); toggleFav('${id}'); closeCardMenu();">${favText}</button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); openEditModal('${id}'); closeCardMenu();">Edit</button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); softDelete('${id}'); closeCardMenu();">Archive</button>`;
+    }
+
+    wrapper.innerHTML = menuHTML;
+
+    // Position menu near the event target
+    const rect = e.currentTarget.getBoundingClientRect();
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+    wrapper.style.left = (rect.right + window.scrollX - 160) + 'px';
+    wrapper.style.zIndex = 9999;
+
+    document.body.appendChild(wrapper);
+
+    // Close when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', onDocClick);
+    }, 0);
+
+    function onDocClick(ev) {
+        if (!wrapper.contains(ev.target)) {
+            closeCardMenu();
+            document.removeEventListener('click', onDocClick);
+        }
+    }
+}
+
 function openNewItemModal() {
     editingItemId = null;
     openModal();
@@ -225,24 +275,14 @@ function renderVault(filterText = '') {
         const card = document.createElement('div');
         card.className = 'card';
         
-        let btns = '';
-        if (currentView === 'trash') {
-            btns = `
-                <button onclick="event.stopPropagation(); restoreItem('${item.id}')" class="action-btn" title="Restore"><i class="ph ph-arrow-counter-clockwise"></i></button>
-                <button onclick="event.stopPropagation(); permDelete('${item.id}')" class="action-btn delete" style="color:var(--danger)" title="Delete"><i class="ph ph-trash"></i></button>
-            `;
-        } else {
-            const heartClass = item.isFavorite ? 'ph-fill ph-heart' : 'ph ph-heart';
-            const activeClass = item.isFavorite ? 'fav-active' : '';
-            
-            btns = `
-                <button onclick="event.stopPropagation(); toggleFav('${item.id}')" class="action-btn ${activeClass}" title="Favorite">
-                    <i class="${heartClass}"></i>
+        // Use a single three-dot "more" button for a cleaner look. Menu is rendered dynamically.
+        let btns = `
+            <div class="more-wrapper">
+                <button onclick="event.stopPropagation(); openCardMenu(event, '${item.id}')" class="action-btn more-btn" title="More">
+                    <i class="ph ph-dots-three-vertical"></i>
                 </button>
-                <button onclick="event.stopPropagation(); openEditModal('${item.id}')" class="action-btn" title="Edit"><i class="ph ph-pencil-simple"></i></button>
-                <button onclick="event.stopPropagation(); softDelete('${item.id}')" class="action-btn" title="Archive"><i class="ph ph-trash"></i></button>
-            `;
-        }
+            </div>
+        `;
 
         let iconHTML;
         if (item.type === 'card') {

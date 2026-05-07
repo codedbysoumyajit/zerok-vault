@@ -96,4 +96,19 @@ if [ -z "${MONGO_URI:-}" ]; then
     fi
 fi
 
-exec /usr/local/bin/zerok-vault
+# If DEV=true, run live-reload using air (requires source to be mounted or copied into /app)
+if [ "${DEV:-false}" = "true" ]; then
+    echo "Starting in DEV mode (air live-reload)"
+    cd /app || true
+    # prefer air from /go/bin then /usr/local/bin
+    if command -v air >/dev/null 2>&1; then
+        exec air -c .air.toml
+    elif [ -x "/go/bin/air" ]; then
+        exec /go/bin/air -c .air.toml
+    else
+        echo "air not found in image; falling back to running the built binary"
+        exec /usr/local/bin/zerok-vault
+    fi
+else
+    exec /usr/local/bin/zerok-vault
+fi

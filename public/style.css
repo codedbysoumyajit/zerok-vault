@@ -153,6 +153,14 @@ body {
 .action-btn.fav-active { color: #ef4444; background: rgba(239, 68, 68, 0.1); border-color: #ef4444; }
 .action-btn.delete:hover { background: #fee2e2; color: var(--danger); border-color: var(--danger); }
 
+/* More (three-dot) menu styles */
+.more-wrapper { position: relative; }
+.more-btn { width: 36px; height: 36px; border-radius: 8px; padding: 6px; }
+.card-menu { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 8px 24px rgba(2,6,23,0.12); padding: 6px; min-width: 160px; display: flex; flex-direction: column; gap: 6px; }
+.card-menu button { background: transparent; border: none; text-align: left; padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text-main); font-weight: 600; }
+.card-menu button:hover { background: var(--bg-body); color: var(--primary); }
+.card-menu button.danger { color: var(--danger); }
+
 /* DETAIL VIEW */
 .detail-row { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: var(--bg-body); border-radius: 12px; margin-bottom: 12px; }
 .detail-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }

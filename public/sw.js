@@ -1,7 +1,7 @@
 // ZeroK Vault Service Worker - World-Class PWA Implementation
 // Version 1.0.0
 
-const CACHE_VERSION = 'zerok-vault-v1.0.0';
+const CACHE_VERSION = 'zerok-vault-v1.0.1';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
 const API_CACHE = `${CACHE_VERSION}-api`;
