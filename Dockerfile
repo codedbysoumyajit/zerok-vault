@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 # ----------------------------
 FROM mongo:7.0
 
-WORKDIR /root/
+WORKDIR /app
 
 # Add a tiny wait utility for the startup script.
 RUN apt-get update \
