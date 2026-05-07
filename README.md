@@ -85,7 +85,7 @@ zerok-vault/
 ├── cmd/server/       # Application entry point
 ├── internal/         # Database, handlers, models, middleware
 ├── public/           # Frontend (HTML/CSS/JS)
-├── Dockerfile        # Container definition (single-image dev+prod)
+├── Dockerfile        # Container
 └── go.mod
 ```
 
