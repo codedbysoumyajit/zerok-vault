@@ -11,7 +11,6 @@ Table of contents
 - [Installation](#installation)
   - [Docker (recommended)](#docker-recommended)
   - [Manual (local dev)](#manual-local-dev)
-- [Single-image workflow (dev + run)](#single-image-workflow-dev--run)
 - [Project Structure](#project-structure)
 - [License](#license)
 
