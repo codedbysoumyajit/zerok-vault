@@ -548,7 +548,21 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <div id="confirm-modal" class="modal-overlay hidden" onclick="if (event.target.id === 'confirm-modal') closeConfirmModal()">
+        <div class="glass-card modal-card confirm-card">
+            <div class="modal-header">
+                <h3 id="confirm-title">Delete Forever?</h3>
+                <button onclick="closeConfirmModal()" class="icon-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <p id="confirm-message" class="confirm-message">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button type="button" class="btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button type="button" id="confirm-action-btn" class="btn-danger">Delete Forever</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=1.0.2"></script>
     <script>
         // PWA Toast Notification Functions
         function showPWAToast(title, message, actionText, onAction, icon = 'ph-download-simple') {

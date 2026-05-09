@@ -105,10 +105,52 @@ function openModal() {
     });
 }
 
+let confirmDialogAction = null;
+
+function openConfirmModal({ title, message, confirmText = 'Confirm', confirmClass = 'btn-danger', onConfirm }) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-title');
+    const messageEl = document.getElementById('confirm-message');
+    const confirmBtn = document.getElementById('confirm-action-btn');
+
+    if (!modal || !titleEl || !messageEl || !confirmBtn) return;
+
+    confirmDialogAction = onConfirm;
+    titleEl.innerText = title;
+    messageEl.innerText = message;
+    confirmBtn.innerText = confirmText;
+    confirmBtn.className = `btn-danger ${confirmClass}`;
+
+    confirmBtn.onclick = async () => {
+        const action = confirmDialogAction;
+        closeConfirmModal();
+        if (action) await action();
+    };
+
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => modal.classList.add('open'));
+}
+
+function closeConfirmModal() {
+    const modal = document.getElementById('confirm-modal');
+    if (!modal) return;
+
+    modal.classList.remove('open');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        confirmDialogAction = null;
+    }, 250);
+}
+
 // --- Card menu (three-dot) ---
 function closeCardMenu() {
     const existing = document.querySelector('.card-menu');
     if (existing) existing.remove();
+}
+
+function replaceImgWithIcon(img, iconClass) {
+    if (!img || !img.parentElement) return;
+    img.parentElement.innerHTML = `<i class="${iconClass}"></i>`;
 }
 
 function openCardMenu(e, id) {
@@ -123,25 +165,34 @@ function openCardMenu(e, id) {
     let menuHTML = '';
     if (currentView === 'trash') {
         menuHTML += `<button onclick="event.stopPropagation(); restoreItem('${id}'); closeCardMenu();"><i class="ph ph-arrow-counter-clockwise"></i><span>Restore</span></button>`;
-        menuHTML += `<button onclick="event.stopPropagation(); permDelete('${id}'); closeCardMenu();" class="danger"><i class="ph ph-trash"></i><span>Delete Forever</span></button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); confirmPermDelete('${id}'); closeCardMenu();" class="danger"><i class="ph ph-trash"></i><span>Delete Forever</span></button>`;
     } else {
         const favText = item.isFavorite ? 'Unfavorite' : 'Favorite';
         const favIcon = item.isFavorite ? 'ph-fill ph-star' : 'ph ph-star';
         menuHTML += `<button onclick="event.stopPropagation(); toggleFav('${id}'); closeCardMenu();"><i class="${favIcon}"></i><span>${favText}</span></button>`;
         menuHTML += `<button onclick="event.stopPropagation(); openEditModal('${id}'); closeCardMenu();"><i class="ph ph-pencil-simple"></i><span>Edit</span></button>`;
-        menuHTML += `<button onclick="event.stopPropagation(); softDelete('${id}'); closeCardMenu();"><i class="ph ph-archive"></i><span>Archive</span></button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); softDelete('${id}'); closeCardMenu();"><i class="ph ph-archive"></i><span>Move to Trash</span></button>`;
     }
 
     wrapper.innerHTML = menuHTML;
 
     // Position menu near the event target
     const rect = e.currentTarget.getBoundingClientRect();
-    wrapper.style.position = 'absolute';
-    wrapper.style.top = (rect.bottom + window.scrollY + 8) + 'px';
-    wrapper.style.left = (rect.right + window.scrollX - 160) + 'px';
+    wrapper.style.position = 'fixed';
+    wrapper.style.top = '0px';
+    wrapper.style.left = '0px';
+    wrapper.style.visibility = 'hidden';
     wrapper.style.zIndex = 9999;
 
     document.body.appendChild(wrapper);
+
+    const menuRect = wrapper.getBoundingClientRect();
+    const padding = 12;
+    const left = Math.min(Math.max(rect.right - menuRect.width, padding), window.innerWidth - menuRect.width - padding);
+    const top = Math.min(Math.max(rect.bottom + 8, padding), window.innerHeight - menuRect.height - padding);
+    wrapper.style.left = `${Math.max(padding, left)}px`;
+    wrapper.style.top = `${Math.max(padding, top)}px`;
+    wrapper.style.visibility = 'visible';
 
     // Close when clicking outside
     setTimeout(() => {
@@ -300,7 +351,7 @@ function renderVault(filterText = '') {
             };
             const brandLogo = brandLogos[item.cardBrand];
             if (brandLogo) {
-                iconHTML = `<img src="${brandLogo}" alt="${item.cardBrand}" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-credit-card\\'></i>'" style="width: 32px; height: 32px; object-fit: contain;">`;
+                iconHTML = `<img src="${brandLogo}" alt="${item.cardBrand}" onerror="replaceImgWithIcon(this, 'ph ph-credit-card')" style="width: 32px; height: 32px; object-fit: contain;">`;
             } else {
                 iconHTML = `<i class="ph ph-credit-card"></i>`;
             }
@@ -309,7 +360,7 @@ function renderVault(filterText = '') {
         } else if (item.type === 'note') {
             iconHTML = `<i class="ph ph-note-pencil"></i>`;
         } else if (item.website) {
-            iconHTML = `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="this.parentElement.innerHTML='<i class=\'ph ph-key\'></i>'" style="width: 24px; height: 24px; border-radius: 4px;">`;
+            iconHTML = `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.website)}&sz=64" alt="" onerror="replaceImgWithIcon(this, 'ph ph-key')" style="width: 24px; height: 24px; border-radius: 4px;">`;
         } else {
             iconHTML = `<i class="ph ph-key"></i>`;
         }
@@ -506,11 +557,23 @@ async function restoreItem(id) {
     } 
 }
 async function permDelete(id) {
-    if(!confirm("Delete forever?")) return;
     await fetch(API + `/vault/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } });
     allItems = allItems.filter(x => x.id !== id);
     renderVault();
     showToast('Item deleted permanently', 'success');
+}
+
+function confirmPermDelete(id) {
+    const item = allItems.find(x => x.id === id);
+    const itemLabel = item?.title || 'this item';
+
+    openConfirmModal({
+        title: 'Delete Forever?',
+        message: `This will permanently delete ${itemLabel}. This cannot be undone.`,
+        confirmText: 'Delete Forever',
+        confirmClass: 'danger-action',
+        onConfirm: () => permDelete(id)
+    });
 }
 
 // --- Auth ---
