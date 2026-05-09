@@ -122,13 +122,14 @@ function openCardMenu(e, id) {
     // Build menu options depending on view/state
     let menuHTML = '';
     if (currentView === 'trash') {
-        menuHTML += `<button onclick="event.stopPropagation(); restoreItem('${id}'); closeCardMenu();">Restore</button>`;
-        menuHTML += `<button onclick="event.stopPropagation(); permDelete('${id}'); closeCardMenu();" class="danger">Delete Forever</button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); restoreItem('${id}'); closeCardMenu();"><i class="ph ph-arrow-counter-clockwise"></i><span>Restore</span></button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); permDelete('${id}'); closeCardMenu();" class="danger"><i class="ph ph-trash"></i><span>Delete Forever</span></button>`;
     } else {
         const favText = item.isFavorite ? 'Unfavorite' : 'Favorite';
-        menuHTML += `<button onclick="event.stopPropagation(); toggleFav('${id}'); closeCardMenu();">${favText}</button>`;
-        menuHTML += `<button onclick="event.stopPropagation(); openEditModal('${id}'); closeCardMenu();">Edit</button>`;
-        menuHTML += `<button onclick="event.stopPropagation(); softDelete('${id}'); closeCardMenu();">Archive</button>`;
+        const favIcon = item.isFavorite ? 'ph-fill ph-star' : 'ph ph-star';
+        menuHTML += `<button onclick="event.stopPropagation(); toggleFav('${id}'); closeCardMenu();"><i class="${favIcon}"></i><span>${favText}</span></button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); openEditModal('${id}'); closeCardMenu();"><i class="ph ph-pencil-simple"></i><span>Edit</span></button>`;
+        menuHTML += `<button onclick="event.stopPropagation(); softDelete('${id}'); closeCardMenu();"><i class="ph ph-archive"></i><span>Archive</span></button>`;
     }
 
     wrapper.innerHTML = menuHTML;
