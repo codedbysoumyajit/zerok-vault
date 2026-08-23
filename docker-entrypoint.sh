@@ -51,7 +51,8 @@ wait_for_mongo() {
 }
 
 bootstrap_auth_user() {
-    cat > /tmp/bootstrap-mongo-user.js <<'EOF'
+    if command -v mongosh >/dev/null 2>&1; then
+        cat > /tmp/bootstrap-mongo-user.js <<'EOF'
 const dbName = process.env.MONGO_DB_NAME || "zerok_vault";
 const user = process.env.MONGO_APP_USERNAME;
 const password = process.env.MONGO_APP_PASSWORD;
@@ -65,8 +66,22 @@ if (!database.getUser(user)) {
   });
 }
 EOF
-
-    su -p -s /bin/sh mongodb -c 'mongosh --quiet /tmp/bootstrap-mongo-user.js'
+        su -p -s /bin/sh mongodb -c 'mongosh --quiet /tmp/bootstrap-mongo-user.js'
+    else
+        su -s /bin/sh mongodb -c "mongo --quiet --eval '
+var dbName = \"${DB_NAME}\";
+var user = \"${APP_USER}\";
+var password = \"${APP_PASS}\";
+var database = db.getSiblingDB(dbName);
+if (!database.getUser(user)) {
+  database.createUser({
+    user: user,
+    pwd: password,
+    roles: [{ role: \"readWrite\", db: dbName }]
+  });
+}
+'"
+    fi
 }
 
 if [ "$AUTH_ENABLED" = "true" ] && [ ! -f "$AUTH_BOOTSTRAP_MARKER" ]; then
@@ -78,7 +93,11 @@ if [ "$AUTH_ENABLED" = "true" ] && [ ! -f "$AUTH_BOOTSTRAP_MARKER" ]; then
         rm -f "$AUTH_BOOTSTRAP_MARKER"
     fi
 
-    su -s /bin/sh mongodb -c 'mongosh --quiet --eval "db.getSiblingDB(\"admin\").shutdownServer({ force: true })"' || true
+    if command -v mongosh >/dev/null 2>&1; then
+        su -s /bin/sh mongodb -c 'mongosh --quiet --eval "db.getSiblingDB(\"admin\").shutdownServer({ force: true })"' || true
+    else
+        su -s /bin/sh mongodb -c 'mongo --quiet --eval "db.getSiblingDB(\"admin\").shutdownServer({ force: true })"' || true
+    fi
 
     start_mongod true
     wait_for_mongo

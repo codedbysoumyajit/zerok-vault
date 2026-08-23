@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 # ----------------------------
 # Stage 2: Runtime with MongoDB
 # ----------------------------
-FROM mongo:7.0
+FROM mongo:4.4
 
 WORKDIR /app
 
